@@ -22,9 +22,10 @@ class Bus extends Vehicle {
 	
 	//메서드와의 차이점 1. 생성자 메서드는 클래스 이름을 가진다. 2. 리턴값이 없다.
 	//----- 생성자 선언 -------------
-//	Bus () {
-//		num = 200;
-//	}
+	Bus () {
+		super(4);
+		num = 200;
+	}
 	
 	Bus (int num) {
 		super(4);		// == new Vehicle(4) 바로 위 아버지 클래스의 생성자 호출
