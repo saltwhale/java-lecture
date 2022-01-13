@@ -1,9 +1,11 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 
@@ -80,19 +82,92 @@ public class NaverPriceApp {
 	private static void getHtmlByJsoup (String pUrl) throws IOException, Exception {
 		
 		Connection conn = Jsoup.connect(pUrl);
-		Document html = conn.get();						//conn.get();은 IOException을 일으킬 수 있다. 이 경우 try~catch문을 사용하거나 throws를 해야한다.
+		Document html = conn.get();					//conn.get();은 IOException을 일으킬 수 있다. 이 경우 try~catch문을 사용하거나 throws를 해야한다.
 		//System.out.println(html.toString());			
 		
-		Elements files = html.select(".list_basis");
+		//Elements files = html.select(".list_basis");
+		Elements files = html.select(".list_basis > div > div");
+		writeTxtFile("d:\\price.txt", files);			//텍스트파일 만들기
+		writeExcelFile("d:\\price.csv", files);			//엑셀파일 만들기
 		
-		System.out.println(files.size());
+//		System.out.println(".list_basis의 길이 : " + files.size());
 		
-		for(int i = 0; i<files.size(); i++) {
-			System.out.println(files.get(i).text());
-		}
+		//for(int i = 0; i<files.size(); i++) {
+		//	System.out.println(files.get(i).text());
+		//}
+		
+		//List<Element>
+//		for (Element item : files) {
+//			//System.out.println(item.text());
+//			String goodsName = item.select(".basicList_link__1MaTN").text();
+//			String price = item.select(".price_num__2WUXn").text();
+//			String link = item.select(".basicList_link__1MaTN").attr("href"); //attr - 속성 들고오기
+//			
+//			System.out.println(goodsName + " " +price);
+//			System.out.println(link);
+//		}
+		
+		
 		
 	}
 	
+	//텍스트파일 만들기
+	private static void writeTxtFile (String fileName, Elements list) throws Exception {
+		
+		File file = new File(fileName); //file = d"\price.txt
+		BufferedWriter writer = null;
+		
+		String lineFormat = "%s %s link:%s\r\n";
+		String result = "";
+		
+		for (Element item : list) {
+			//System.out.println(item.text());
+			String goodsName = item.select(".basicList_link__1MaTN").text();
+			String price = item.select(".price_num__2WUXn").text();
+			String link = item.select(".basicList_link__1MaTN").attr("href"); //attr - 속성 들고오기
+			result += String.format(lineFormat, goodsName, price, link);
+		}
+		
+		try {
+			writer = new BufferedWriter(new FileWriter(file));
+			writer.write(result);
+		} catch (IOException ie) {
+			
+		} finally {
+			if(writer !=null) writer.close();	
+		}
+	}
+	
+	// 엑셀파일 만들기
+	private static void writeExcelFile (String fileName, Elements list) throws Exception {
+		
+		File file = new File(fileName); //file = d"\price.csv
+		BufferedWriter writer = null;
+		
+		String lineFormat = "%d, %s,%s,link:%s\r\n";
+		String result = "순위,상품명,가격,링크\r\n";
+		int i = 1;
+		
+		for (Element item : list) {
+			//System.out.println(item.text());
+			String goodsName = item.select(".basicList_link__1MaTN").text();
+			String price = item.select(".price_num__2WUXn").text().replace(",","");
+			String link = item.select(".basicList_link__1MaTN").attr("href"); //attr - 속성 들고오기
+			result += String.format(lineFormat, i++, goodsName, price, link);
+		}
+		
+		try {
+			writer = new BufferedWriter(new FileWriter(file));
+			writer.write(result);
+		} catch (IOException ie) {
+			
+		} finally {
+			if(writer !=null) writer.close();	
+		}
+	}
+	
+	
+	// --- java.net.pakage
 	// ----URL을 가지고, 접속, HTML 파일을 가지고 온다.
 	private static String getHtml(String pUrl) throws Exception {
 		
